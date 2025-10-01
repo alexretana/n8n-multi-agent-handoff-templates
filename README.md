@@ -93,6 +93,9 @@ After importing, you'll need to set up your OpenAI credentials:
 
 See `Workflow-1.JPG` and `Workflow-2.JPG` for visual examples of how these workflows appear in the n8n interface.
 
+![ScreenShot of Workflow 1](https://github.com/alexretana/n8n-multi-agent-handoff-templates/blob/main/Workflow-1.JPG)
+![ScreenShot of Workflow 2](https://github.com/alexretana/n8n-multi-agent-handoff-templates/blob/main/Workflow-2.JPG)
+
 ## License
 
 Feel free to use, modify, and distribute these templates for your projects.
