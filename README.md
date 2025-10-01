@@ -4,7 +4,7 @@ Two n8n workflow templates demonstrating different patterns for implementing mul
 
 ## Blog Post
 
-Read the full article explaining these templates: **[[YOUR BLOG POST LINK HERE](https://dev.to/alexretana/optimizing-multi-agent-workflows-in-n8n-a-context-aware-approach-to-agent-handoffs-1hc4)]**
+Read the full article explaining these templates: **[Optimizing Multi-Agent Workflows in n8n: A Context-Aware Approach to Agent Handoffs](https://dev.to/alexretana/optimizing-multi-agent-workflows-in-n8n-a-context-aware-approach-to-agent-handoffs-1hc4)]**
 
 ## Overview
 
