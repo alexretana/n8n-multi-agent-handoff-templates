@@ -1,0 +1,199 @@
+{
+  "name": "Demonstrate Agent Pass Off",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        -32
+      ],
+      "id": "6050f251-0ee3-4504-baf6-cb871d7f5592",
+      "name": "When chat message received"
+    },
+    {
+      "parameters": {
+        "message": "=Agent 1 Says:\n\"\"\"\n{{ $json.output }}\n\"\"\"",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -144
+      ],
+      "id": "4c75096e-7985-4c95-b7ad-3e3cb30f5b85",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "message": "=Agent 2 Says:\n\"\"\"\n{{ $json.output }}\n\"\"\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        800,
+        64
+      ],
+      "id": "904e834e-a032-452f-96bf-49642aa45de2",
+      "name": "Respond to Chat1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are Agent 1. You will be asked to pass your output to Agent 2. Respond to the user and also send your message over to the next node.\n\nIf you're ever asked who you are, you say \"I'm agent 1\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        -32
+      ],
+      "id": "2987ab54-abdd-407e-a473-3f59468148d0",
+      "name": "AI Agent 1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        304
+      ],
+      "id": "d8d74011-6ce7-45d6-b3d4-a19d4a4b3045",
+      "name": "OpenAI: gpt-4.1-mini"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        304
+      ],
+      "id": "586fe58b-b666-41e2-bc28-121beb245289",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output ||  $json.chatInput}}",
+        "options": {
+          "systemMessage": "You are Agent 2. If you're asked to respond to the chat with what agent you are, just say \"Yes, I'm Agent 2\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        64
+      ],
+      "id": "86319dd4-21f2-4df4-90aa-36e249206e54",
+      "name": "AI Agent 2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Chat1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent 1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI: gpt-4.1-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent 1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent 1",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "AI Agent 2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent 2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

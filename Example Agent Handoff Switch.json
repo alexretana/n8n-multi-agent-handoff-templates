@@ -1,0 +1,538 @@
+{
+  "name": "Example Agent Handoff Switch",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        224
+      ],
+      "id": "d105b65a-afb8-4668-8910-57b07e60bb34",
+      "name": "When chat message received"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        640
+      ],
+      "id": "8e79ab15-7dee-40ab-852f-b887ede8efa8",
+      "name": "OpenAI: gpt-4.1-mini"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        400
+      ],
+      "id": "85f92c06-690b-448f-addc-2af2e841025c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.forwarded_message ? `User's Original Message:\\n${$('When chat message received').item.json.chatInput}\\nMaster Agent's message to you:\\n${$json.forwarded_message}` : $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are Agent 2. If you're asked to respond to the chat with what agent you are, just say \"Yes, I'm Agent 2\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        224
+      ],
+      "id": "1c81c802-a9c7-4f3c-9a2e-ddaa09d43f57",
+      "name": "AI Agent 2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.agent_to_route_to }}",
+                    "rightValue": "Agent 1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "82c0e936-8f93-4d4c-9300-49ea23eb694c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6fc96bfa-59ff-4ab8-8a2b-3fc9bf066f9f",
+                    "leftValue": "={{ $json.agent_to_route_to }}",
+                    "rightValue": "Agent 2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "85449cd1-c116-4670-9356-132a3c318ee2",
+                    "leftValue": "={{ $json.agent_to_route_to }}",
+                    "rightValue": "Agent 3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        368,
+        208
+      ],
+      "id": "d6eec79b-8101-4bd1-b4ea-e12aea084da2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the Master Agent. \n\nYou will be asked to route the user's request to the correct agent.\n\nIf you're ever asked who you are, you say \"I am the Master Agent\"\n\nYou compose 2 messages, one to the user to explain which agent you choose, and the second message that actually goes to the next Agent\n\n\n\nIMPORTANT: You always ouput your answer in full json, no explanation in the following format:\n\nYou will route to either \"Agent 1\", \"Agent 2\", or \"Agent 3\"\n\n{\n  direct_response_to_user: \"I'm routing you to Agent 1\",\n  agent_to_route_to: \"Agent 1\",\n  forwarded_message: \"**Summary of what user asked for and why Master Agent routed to you**\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        224
+      ],
+      "id": "9f795f64-aacd-437a-ad59-91abbc81a4a0",
+      "name": "AI Master Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.forwarded_message ? `User's Original Message:\\n${$('When chat message received').item.json.chatInput}\\nMaster Agent's message to you:\\n${$json.forwarded_message}` : $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are Agent 1. If you're asked to respond to the chat with what agent you are, just say \"Yes, I'm Agent 1\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        -64
+      ],
+      "id": "d433192b-3363-4098-8c2b-6237ad1aad68",
+      "name": "AI Agent 1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.forwarded_message ? `User's Original Message:\\n${$('When chat message received').item.json.chatInput}\\nMaster Agent's message to you:\\n${$json.forwarded_message}` : $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are Agent 3. If you're asked to respond to the chat with what agent you are, just say \"Yes, I'm Agent 3\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        480
+      ],
+      "id": "78e1deea-721c-4776-8bc5-1c39ef7dd9dc",
+      "name": "AI Agent 3"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        96
+      ],
+      "id": "3a3d61dd-69fd-4bc5-915d-ff04748b4614",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        384
+      ],
+      "id": "058e80c2-1386-42fb-b9ba-710a2710980a",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        640
+      ],
+      "id": "a11dce13-a6c2-433b-85dd-c8c3473c3883",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "message": "=Master Says:\n\"\"\"\n{{ $json.direct_response_to_user }}\n\"\"\"",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        368,
+        32
+      ],
+      "id": "2400a0ec-b1a3-49e5-9451-1e96db8011bc",
+      "name": "Master Agent Responds To Chat"
+    },
+    {
+      "parameters": {
+        "message": "=Agent 2 Says:\n\"\"\"\n{{ $json.output }}\n\"\"\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -64
+      ],
+      "id": "5fc78952-2899-401b-832a-69d428a8123a",
+      "name": "Agent 1 Responds To Chat"
+    },
+    {
+      "parameters": {
+        "message": "=Agent 2 Says:\n\"\"\"\n{{ $json.output }}\n\"\"\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        224
+      ],
+      "id": "1a965674-8c87-4727-9c86-292950ae9294",
+      "name": "Agent 2 Responds To Chat"
+    },
+    {
+      "parameters": {
+        "message": "=Agent 2 Says:\n\"\"\"\n{{ $json.output }}\n\"\"\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        480
+      ],
+      "id": "ed0ea3c7-279f-4f66-8e82-3ca890e8c076",
+      "name": "Agent 3 Responds To Chat"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b8ea462-3633-4471-9cfc-b677c3df13f7",
+              "name": "direct_response_to_user",
+              "value": "={{ $json.output.parseJson().direct_response_to_user }}",
+              "type": "string"
+            },
+            {
+              "id": "5062faac-e104-4238-8ed6-f6d56a635aed",
+              "name": "agent_to_route_to",
+              "value": "={{ $json.output.parseJson().agent_to_route_to }}",
+              "type": "string"
+            },
+            {
+              "id": "d55f1153-7b01-428d-8d10-cbd03694c9aa",
+              "name": "forwarded_message",
+              "value": "={{ $json.output.parseJson().forwarded_message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        224
+      ],
+      "id": "c7c1570c-22c4-4645-b232-2b84e7b9ae59",
+      "name": "Map Master Agent's Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Master Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI: gpt-4.1-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Master Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent 2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent 3",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent 1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Master Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent 2": {
+      "main": [
+        [
+          {
+            "node": "Agent 2 Responds To Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Master Agent": {
+      "main": [
+        [
+          {
+            "node": "Map Master Agent's Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent 1": {
+      "main": [
+        [
+          {
+            "node": "Agent 1 Responds To Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent 3": {
+      "main": [
+        [
+          {
+            "node": "Agent 3 Responds To Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent 1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent 2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent 3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1 Responds To Chat": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2 Responds To Chat": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 3 Responds To Chat": {
+      "main": [
+        [
+          {
+            "node": "AI Agent 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Master Agent's Response": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Master Agent Responds To Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
